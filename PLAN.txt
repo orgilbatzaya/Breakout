@@ -1,0 +1,30 @@
+Orgil Batzaya
+
+I think "No Escape!" variant is interesting because the bricks fall after being hit.
+These falling bricks then become the main weapon to defeat the enemies.
+
+I intend to build three levels. The first will have two rows of blocks, in which each block
+is destroyed by one hit. The second will have one more row of blocks, but about
+a third of the blocks will be stronger and require more hits. The last will have the
+same number of rows as in level 2, but two-thirds of the blocks here will be strong blocks.
+Furthermore, as the levels progress, the balls speed will increase incrementally.
+
+I intend to have three types of blocks. The first will be a basic weak block which
+is destroyed after one hit. The second will be a strong block, which will take two hits.
+The third will be a power up block, which is destroyed after one hit, and the user
+must "catch" the power up as it falls to gain the power. These three types will be
+differentiated by a different color or design.
+
+I intend to have three power-ups. One will give the user an extra life, the other will lengthen
+the paddle, and the last will enable the user to user to press a key to escape the level.
+
+The cheat keys will be :
+ - (0, 1, 2, 3) to navigate to the the start screen and any level.
+ - "I" to gain an infinite or very large number of lives
+ - "R" to reset ball and paddle position in the middle
+
+ The extra part I intend to add is to have certain blocks fall off  when hit instead
+ of disappearing and get added to a cache. Then with a certain key, the user can shoot
+ the blocks as projectiles to hit remaining blocks. This is a substantial edition because
+ it adds another dimension to destroying blocks, gives the user another thing to catch, and is
+ inspired by the "No Escape!" variant.
