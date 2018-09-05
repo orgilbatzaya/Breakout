@@ -8,11 +8,10 @@ import javafx.scene.image.ImageView;
 
 
 public class Bouncer {
-    //private final String BOUNCER_IMAGE = "ball.gif";
     private ImageView myView;
-    private int BOUNCER_SPEED = 50;
-    private Point2D myVelocity;
-    private int direction = 1;
+    private int BOUNCER_SPEED = 100;
+    private int xdirection = 1;
+    private int ydirection = 1;
 
 
 
@@ -24,25 +23,30 @@ public class Bouncer {
         myView.setX(40 + screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
         myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
         // turn speed into velocity that can be updated on bounces
-        myVelocity = new Point2D(myView.getX(), myView.getY());
+        //myVelocity = new Point2D(myView.getX(), myView.getY());
                 //getRandomInRange(BOUNCER_MIN_SPEED, BOUNCER_MAX_SPEED));
     }
 
 
 
-    public void move (double elapsed, double screenWidth, double screenHeight, ImageView obj) {
+    public void checkDirection (double screenWidth, double screenHeight, ImageView obj) {
         // collide all bouncers against the walls
-        if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()
-            || myView.getY() < 0 || myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()) {
-            direction  *= -1;
+        if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()){
+            xdirection  *= -1;
         }
-        else if (obj.getBoundsInParent().intersects(myView.getBoundsInParent())){
-            direction *= -1;
+        else if (myView.getY() < 0 || myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()){
+            ydirection *= -1;
         }
-        myView.setX(myView.getX() + direction * BOUNCER_SPEED * elapsed);
-        myView.setY(myView.getY() + direction * BOUNCER_SPEED * elapsed);
-        System.out.println(myView.getY());
+        else if (obj.getBoundsInParent().intersects(myView.getBoundsInParent())) {
+            ydirection *= -1;
+        }
     }
+
+    public void move (double elapsed) {
+        myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
+        myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+    }
+
 
 
 

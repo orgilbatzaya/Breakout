@@ -14,6 +14,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import java.util.ArrayList;
 
 /**
  * A breakout variant
@@ -30,7 +31,10 @@ public class BreakoutGame extends Application {
     private final Paint HIGHLIGHT = Color.OLIVEDRAB;
     private final String BOUNCER_IMAGE = "ball.gif";
     private final String PADDLE_IMAGE = "paddle.gif";
-    private final int MOVER_SPEED = 10;
+    private final int PADDLE_SPEED = 20;
+    private final String BLOCK1_IMAGE = "brick1.gif";
+    private final String BLOCK2_IMAGE = "brick2.gif";
+    private final int  NUM_BLOCKS = 10;
 
 
 
@@ -38,6 +42,7 @@ public class BreakoutGame extends Application {
     private Scene myScene;
     private Bouncer myBouncer;
     private ImageView myPaddle;
+    private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private int dir = 1;
 
 
@@ -53,6 +58,7 @@ public class BreakoutGame extends Application {
         stage.setTitle(TITLE);
         stage.show();
         // attach "game loop" to timeline to play it
+
         var frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY));
         var animation = new Timeline();
         animation.setCycleCount(Timeline.INDEFINITE);
@@ -69,18 +75,24 @@ public class BreakoutGame extends Application {
         // make some shapes and set their properties
         var imageBouncer = new Image(this.getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
         myBouncer = new Bouncer(imageBouncer, SIZE, SIZE);
-        // x and y represent the top left corner, so center it
-        //myBouncer.setX(width / 2 - myBouncer.getBoundsInLocal().getWidth() / 2);
-        //myBouncer.setY(height / 2 - myBouncer.getBoundsInLocal().getHeight() / 2);
 
         var imagePaddle = new Image(this.getClass().getClassLoader().getResourceAsStream(PADDLE_IMAGE));
         myPaddle = new ImageView(imagePaddle);
         myPaddle.setX(width / 2 - myPaddle.getBoundsInLocal().getWidth() / 2);
         myPaddle.setY(height / 2 - myPaddle.getBoundsInLocal().getHeight() / 2);
 
+        var imageBrick1 = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
+        for (int k = 0; k < NUM_BLOCKS; k++) {
+            var bl = new Block(imageBrick1);
+            myBlocks.add(bl);
+            root.getChildren().add(bl.getView());
+        }
+        arrangeBlocks(myBlocks);
+
+
         // order added to the group is the order in which they are drawn
-        root.getChildren().add(myBouncer.getView());
         root.getChildren().add(myPaddle);
+        root.getChildren().add(myBouncer.getView());
         // respond to input
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
         return scene;
@@ -91,30 +103,35 @@ public class BreakoutGame extends Application {
     private void step (double elapsedTime) {
         // update attributes
 
-        myBouncer.move(elapsedTime, myScene.getWidth(), myScene.getHeight(), myPaddle);
-
-
-
-
-
-
-
+        for(Block b:myBlocks){
+            myBouncer.checkDirection(myScene.getWidth(), myScene.getHeight(), b.getView());
+            b.onHit(myBouncer.getView());
+        }
+        myBouncer.checkDirection(myScene.getWidth(), myScene.getHeight(), myPaddle);
+        myBouncer.move(elapsedTime);
 
     }
 
     // What to do each time a key is pressed
     private void handleKeyInput (KeyCode code) {
         if (code == KeyCode.RIGHT) {
-            myPaddle.setX(myPaddle.getX() + MOVER_SPEED);
+            myPaddle.setX(myPaddle.getX() + PADDLE_SPEED);
         }
         else if (code == KeyCode.LEFT) {
-            myPaddle.setX(myPaddle.getX() - MOVER_SPEED);
+            myPaddle.setX(myPaddle.getX() - PADDLE_SPEED);
         }
         else if (code == KeyCode.UP) {
-            myPaddle.setY(myPaddle.getY() - MOVER_SPEED);
+            myPaddle.setY(myPaddle.getY() - PADDLE_SPEED);
         }
         else if (code == KeyCode.DOWN) {
-            myPaddle.setY(myPaddle.getY() + MOVER_SPEED);
+            myPaddle.setY(myPaddle.getY() + PADDLE_SPEED);
+        }
+    }
+    private void arrangeBlocks(ArrayList<Block> blocks){
+        double blockWidth = SIZE / NUM_BLOCKS;
+        for(int i = 0; i < NUM_BLOCKS; i++){
+            blocks.get(i).getView().setFitWidth(blockWidth);
+            blocks.get(i).getView().setX(i * blockWidth);
         }
     }
 
