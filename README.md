@@ -7,7 +7,7 @@ Name: Orgil Batzaya
 
 ### Timeline
 
-Start Date: 09/01/2018
+Start Date: 09/03/2018
 
 Finish Date: 
 
