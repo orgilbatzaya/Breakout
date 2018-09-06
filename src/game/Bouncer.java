@@ -20,7 +20,7 @@ public class Bouncer {
         // make sure it stays a circle
         // make sure it stays within the bounds
 
-        myView.setX(40 + screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
+        myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
         myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
         // turn speed into velocity that can be updated on bounces
         //myVelocity = new Point2D(myView.getX(), myView.getY());

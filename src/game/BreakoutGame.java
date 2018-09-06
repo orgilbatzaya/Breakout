@@ -39,7 +39,9 @@ public class BreakoutGame extends Application {
 
 
     // some things we need to remember during our game
-    private Scene myScene;
+    private Scene levelOne;
+    private Scene levelTwo;
+    private Scene levelThree;
     private Bouncer myBouncer;
     private ImageView myPaddle;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
@@ -53,8 +55,11 @@ public class BreakoutGame extends Application {
     public void start (Stage stage) {
         // attach scene to the stage and display it
 
-        myScene = setupGame(SIZE, SIZE, BACKGROUND);
-        stage.setScene(myScene);
+        levelOne = setupGame(SIZE, SIZE, BACKGROUND);
+        //levelTwo = setupGame(SIZE, SIZE, BACKGROUND);
+
+        stage.setScene(levelOne);
+        //levelOne.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
         stage.setTitle(TITLE);
         stage.show();
         // attach "game loop" to timeline to play it
@@ -82,8 +87,9 @@ public class BreakoutGame extends Application {
         myPaddle.setY(height / 2 - myPaddle.getBoundsInLocal().getHeight() / 2);
 
         var imageBrick1 = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
+
         for (int k = 0; k < NUM_BLOCKS; k++) {
-            var bl = new Block(imageBrick1);
+            var bl = new Block(2);
             myBlocks.add(bl);
             root.getChildren().add(bl.getView());
         }
@@ -104,10 +110,10 @@ public class BreakoutGame extends Application {
         // update attributes
 
         for(Block b:myBlocks){
-            myBouncer.checkDirection(myScene.getWidth(), myScene.getHeight(), b.getView());
+            myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), b.getView());
             b.onHit(myBouncer.getView());
         }
-        myBouncer.checkDirection(myScene.getWidth(), myScene.getHeight(), myPaddle);
+        myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myPaddle);
         myBouncer.move(elapsedTime);
 
     }
@@ -126,6 +132,7 @@ public class BreakoutGame extends Application {
         else if (code == KeyCode.DOWN) {
             myPaddle.setY(myPaddle.getY() + PADDLE_SPEED);
         }
+
     }
     private void arrangeBlocks(ArrayList<Block> blocks){
         double blockWidth = SIZE / NUM_BLOCKS;
