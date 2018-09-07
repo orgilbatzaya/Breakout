@@ -30,11 +30,9 @@ public class BreakoutGame extends Application {
     private final Paint BACKGROUND = Color.AZURE;
     private final Paint HIGHLIGHT = Color.OLIVEDRAB;
     private final String BOUNCER_IMAGE = "ball.gif";
-    private final String PADDLE_IMAGE = "paddle.gif";
-    private final int PADDLE_SPEED = 20;
     private final String BLOCK1_IMAGE = "brick1.gif";
     private final String BLOCK2_IMAGE = "brick2.gif";
-    private final int  NUM_BLOCKS = 10;
+    private final int  NUM_BLOCKS = 20;
 
 
 
@@ -43,7 +41,7 @@ public class BreakoutGame extends Application {
     private Scene levelTwo;
     private Scene levelThree;
     private Bouncer myBouncer;
-    private ImageView myPaddle;
+    private Paddle myPaddle;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private int dir = 1;
 
@@ -81,10 +79,8 @@ public class BreakoutGame extends Application {
         var imageBouncer = new Image(this.getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
         myBouncer = new Bouncer(imageBouncer, SIZE, SIZE);
 
-        var imagePaddle = new Image(this.getClass().getClassLoader().getResourceAsStream(PADDLE_IMAGE));
-        myPaddle = new ImageView(imagePaddle);
-        myPaddle.setX(width / 2 - myPaddle.getBoundsInLocal().getWidth() / 2);
-        myPaddle.setY(height / 2 - myPaddle.getBoundsInLocal().getHeight() / 2);
+        myPaddle = new Paddle(SIZE,SIZE);
+
 
         var imageBrick1 = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
 
@@ -97,7 +93,7 @@ public class BreakoutGame extends Application {
 
 
         // order added to the group is the order in which they are drawn
-        root.getChildren().add(myPaddle);
+        root.getChildren().add(myPaddle.getView());
         root.getChildren().add(myBouncer.getView());
         // respond to input
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
@@ -113,7 +109,7 @@ public class BreakoutGame extends Application {
             myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), b.getView());
             b.onHit(myBouncer.getView());
         }
-        myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myPaddle);
+        myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myPaddle.getView());
         myBouncer.move(elapsedTime);
 
     }
@@ -121,25 +117,31 @@ public class BreakoutGame extends Application {
     // What to do each time a key is pressed
     private void handleKeyInput (KeyCode code) {
         if (code == KeyCode.RIGHT) {
-            myPaddle.setX(myPaddle.getX() + PADDLE_SPEED);
+            myPaddle.getView().setX(myPaddle.getView().getX() + myPaddle.getSpeed());
         }
         else if (code == KeyCode.LEFT) {
-            myPaddle.setX(myPaddle.getX() - PADDLE_SPEED);
+            myPaddle.getView().setX(myPaddle.getView().getX() - myPaddle.getSpeed());
         }
         else if (code == KeyCode.UP) {
-            myPaddle.setY(myPaddle.getY() - PADDLE_SPEED);
+            myPaddle.getView().setY(myPaddle.getView().getY() - myPaddle.getSpeed());
         }
         else if (code == KeyCode.DOWN) {
-            myPaddle.setY(myPaddle.getY() + PADDLE_SPEED);
+            myPaddle.getView().setY(myPaddle.getView().getY() + myPaddle.getSpeed());
         }
 
     }
-    private void arrangeBlocks(ArrayList<Block> blocks){
-        double blockWidth = SIZE / NUM_BLOCKS;
-        for(int i = 0; i < NUM_BLOCKS; i++){
-            blocks.get(i).getView().setFitWidth(blockWidth);
-            blocks.get(i).getView().setX(i * blockWidth);
-        }
+    private void arrangeBlocks(ArrayList<Block> blocks) {
+        int rows = 4;
+        int blocksPerRow = NUM_BLOCKS/rows;
+
+        double blockWidth = SIZE / blocksPerRow;
+            for (int i = 0; i < NUM_BLOCKS; i++) {
+                blocks.get(i).getView().setFitWidth(blockWidth);
+                blocks.get(i).getView().setX(i % blocksPerRow * blockWidth);
+                blocks.get(i).getView().setY(10* i/blocksPerRow);
+            }
+
+
     }
 
 

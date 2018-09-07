@@ -6,23 +6,20 @@ import java.util.ArrayList;
 
 public class Block {
     private int myStrength;
-    private int SCREEN_WIDTH;
-    private int SCREEN_HEIGHT;
-
     private final String BLOCK1_IMAGE = "brick1.gif";
     private final String BLOCK2_IMAGE = "brick2.gif";
-
-    private ImageView myView;
+    private Image weakBrick;
+    private Image strongBrick;
+    protected ImageView myView;
 
     public Block(int strength){
-        Image imageBrick = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
-
         myStrength = strength;
+        weakBrick = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
+        strongBrick = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK2_IMAGE));
+        myView = new ImageView(weakBrick);
         if(myStrength == 2){
-            imageBrick = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK2_IMAGE));
-
+            myView.setImage(strongBrick);
         }
-        myView = new ImageView(imageBrick);
 
     }
 
@@ -32,9 +29,7 @@ public class Block {
             myView.setImage(null);
         } else if (obj.getBoundsInParent().intersects(myView.getBoundsInParent()) && myStrength > 0){
             myStrength -= 1;
-                imageBrick = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
-
-            myView.setImage(imageBrick);
+            myView.setImage(weakBrick);
             System.out.println(myStrength);
         }
     }
