@@ -15,6 +15,10 @@ import javafx.scene.shape.Shape;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.ArrayList;
+import java.util.Iterator;
+
+import javafx.scene.layout.Pane;
+
 
 /**
  * A breakout variant
@@ -32,7 +36,8 @@ public class BreakoutGame extends Application {
     private final String BOUNCER_IMAGE = "ball.gif";
     private final String BLOCK1_IMAGE = "brick1.gif";
     private final String BLOCK2_IMAGE = "brick2.gif";
-    private final int  NUM_BLOCKS = 20;
+    private final int  NUM_BLOCKS = 16;
+    private boolean ingame = true;
 
 
 
@@ -43,7 +48,6 @@ public class BreakoutGame extends Application {
     private Bouncer myBouncer;
     private Paddle myPaddle;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
-    private int dir = 1;
 
 
     /**
@@ -76,25 +80,25 @@ public class BreakoutGame extends Application {
         // create a place to see the shapes
         var scene = new Scene(root, width, height, background);
         // make some shapes and set their properties
-        var imageBouncer = new Image(this.getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
-        myBouncer = new Bouncer(imageBouncer, SIZE, SIZE);
-
+        myBouncer = new Bouncer(SIZE, SIZE);
         myPaddle = new Paddle(SIZE,SIZE);
+        // order added to the group is the order in which they are drawn
 
+        root.getChildren().add(myPaddle.getView());
+        root.getChildren().add(myBouncer.getView());
 
-        var imageBrick1 = new Image(this.getClass().getClassLoader().getResourceAsStream(BLOCK1_IMAGE));
-
+        //var blockRegion = new Pane();
         for (int k = 0; k < NUM_BLOCKS; k++) {
             var bl = new Block(2);
             myBlocks.add(bl);
             root.getChildren().add(bl.getView());
         }
+        //arrangeBlocks(myBlocks);
+        //root.getChildren().add(blockRegion);
         arrangeBlocks(myBlocks);
 
 
-        // order added to the group is the order in which they are drawn
-        root.getChildren().add(myPaddle.getView());
-        root.getChildren().add(myBouncer.getView());
+
         // respond to input
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
         return scene;
@@ -104,15 +108,42 @@ public class BreakoutGame extends Application {
     // Note, there are more sophisticated ways to animate shapes, but these simple ways work fine to start.
     private void step (double elapsedTime) {
         // update attributes
+        System.out.println(myBlocks.size());
+        myBouncer.move(levelOne.getWidth(), levelOne.getHeight(), elapsedTime);
 
-        for(Block b:myBlocks){
-            myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), b.getView());
-            b.onHit(myBouncer.getView());
+        for(int i = 0; i < myBlocks.size(); i++){
+            //myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myBlocks.get(i).getView());
+            //updateMyBlocks();
+            if(myBlocks.get(i).onHit(myBouncer.getView())){
+                myBlocks.remove(i);
+            }
+            myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myBlocks.get(i).getView());
+
         }
         myBouncer.checkDirection(levelOne.getWidth(), levelOne.getHeight(), myPaddle.getView());
-        myBouncer.move(elapsedTime);
+        //myBouncer.move(elapsedTime);
+
+
 
     }
+    /*private void updateMyBlocks(){
+        if (myBlocks.isEmpty()) {
+
+            ingame = false;
+            return;
+        }
+
+        for (int i = 0; i < myBlocks.size(); i++) {
+
+            Block b = myBlocks.get(i);
+
+            if (b != null) {
+                continue;
+            } else {
+                myBlocks.remove(i);
+            }
+        }
+    }*/
 
     // What to do each time a key is pressed
     private void handleKeyInput (KeyCode code) {
@@ -131,18 +162,28 @@ public class BreakoutGame extends Application {
 
     }
     private void arrangeBlocks(ArrayList<Block> blocks) {
-        int rows = 4;
-        int blocksPerRow = NUM_BLOCKS/rows;
+        int rows = 2;
+        int blocksPerRow = NUM_BLOCKS / rows;
+
+
 
         double blockWidth = SIZE / blocksPerRow;
-            for (int i = 0; i < NUM_BLOCKS; i++) {
-                blocks.get(i).getView().setFitWidth(blockWidth);
-                blocks.get(i).getView().setX(i % blocksPerRow * blockWidth);
-                blocks.get(i).getView().setY(10* i/blocksPerRow);
-            }
+        for (int i = 0; i < blocksPerRow; i++) {
+            blocks.get(i).getView().setFitWidth(blockWidth);
+            blocks.get(i).getView().setX(i *blockWidth);
+            blocks.get(i).getView().setY(20);
 
 
+        }
+        for (int i = blocksPerRow; i < NUM_BLOCKS; i++) {
+            blocks.get(i).getView().setFitWidth(blockWidth);
+            blocks.get(i).getView().setX((i - 8) *blockWidth);
+            blocks.get(i).getView().setY(50);
+
+
+        }
     }
+
 
 
 
