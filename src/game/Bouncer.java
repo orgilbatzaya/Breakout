@@ -5,6 +5,8 @@ import javafx.geometry.Point2D;
 import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.animation.Timeline;
+
 
 
 public class Bouncer {
@@ -13,6 +15,9 @@ public class Bouncer {
     private int BOUNCER_SPEED = 60;
     private int xdirection = 1;
     private int ydirection = 1;
+    private int livesLeft = 3;
+    private int screenWidth;
+    private int screenHeight;
 
 
 
@@ -20,24 +25,19 @@ public class Bouncer {
         Image bouncerImage = new Image(this.getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
         myView = new ImageView(bouncerImage);
 
-        myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
-        myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
-        // turn speed into velocity that can be updated on bounces
-        //myVelocity = new Point2D(myView.getX(), myView.getY());
-                //getRandomInRange(BOUNCER_MIN_SPEED, BOUNCER_MAX_SPEED));
+        //myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
+        //myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
+        this.screenWidth = screenWidth;
+        this.screenHeight = screenHeight;
+        setPos();
     }
 
 
 
-    public void checkDirection (double screenWidth, double screenHeight, ImageView obj) {
+    public void checkDirection (ImageView obj, Paddle target) {
         // collide all bouncers against the walls
-        if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()){
-            xdirection  *= -1;
-        }
-        else if (myView.getY() < 0 || myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()){
-            ydirection *= -1;
-        }
-        else if (obj.getBoundsInParent().intersects(myView.getBoundsInParent())) {
+        checkScreenBounds(target);
+        if (obj.getBoundsInParent().intersects(myView.getBoundsInParent())) {
             ydirection *= -1;
         }
     }
@@ -45,19 +45,32 @@ public class Bouncer {
         ydirection = 1;
     }
 
-    public void move (double screenWidth, double screenHeight, double elapsed) {
+    public void move (double elapsed, Paddle target) {
         myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
         myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+        checkScreenBounds(target);
+        myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
+        myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+    }
+    private void checkScreenBounds(Paddle targetPaddle){
         if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()){
             xdirection  *= -1;
         }
-        else if (myView.getY() < 0 || myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()){
+        else if (myView.getY() < 0 ){
             ydirection *= -1;
         }
-        myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
-        myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
-        //System.out.println(myView.getY());
+        else if (myView.getY() > screenHeight - myView.getBoundsInLocal().getHeight()){
+            setPos();
+            targetPaddle.subtractLives();
+
+        }
     }
+    public void setPos(){
+        myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
+        myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
+    }
+
+
 
 
 
