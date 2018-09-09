@@ -38,7 +38,7 @@ public class BreakoutGame extends Application {
     private final Paint HIGHLIGHT = Color.OLIVEDRAB;
     private final int NUM_BLOCKS = 16;
     private boolean skipLevel = false;
-    private int CurrentLevel;
+    private int currentLevel;
 
 
     // some things we need to remember during our game
@@ -53,6 +53,7 @@ public class BreakoutGame extends Application {
     private Text Level;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private ArrayList<PowerUp> myPowerUps = new ArrayList<>();
+    private Stage primaryStage;
 
 
     /**
@@ -61,21 +62,25 @@ public class BreakoutGame extends Application {
     @Override
     public void start(Stage stage) {
         // attach scene to the stage and display it
-        CurrentLevel = 1;
-        levelOne = setupGame(SIZE, SIZE, BACKGROUND, CurrentLevel);
-        //levelTwo = setupGame(SIZE, SIZE, BACKGROUND);
+        primaryStage = stage;
+        currentLevel = 1;
+        setScene(currentLevel, levelOne);
 
-        stage.setScene(levelOne);
-        //levelOne.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
-        stage.setTitle(TITLE);
-        stage.show();
         // attach "game loop" to timeline to play it
-
         var frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY, myPaddle));
         animation = new Timeline();
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.getKeyFrames().add(frame);
         animation.play();
+    }
+
+    private void setScene(int currentLvl, Scene scene){
+        myBlocks.clear();
+        myPowerUps.clear();
+        scene = setupGame(SIZE, SIZE, BACKGROUND, currentLvl);
+        primaryStage.setScene(scene);
+        primaryStage.setTitle(TITLE);
+        primaryStage.show();
     }
 
     // Create the game's "scene": what shapes will be in the game and their starting properties
@@ -123,7 +128,9 @@ public class BreakoutGame extends Application {
     // Note, there are more sophisticated ways to animate shapes, but these simple ways work fine to start.
     private void step(double elapsedTime, Paddle target) {
         // update attributes
-        System.out.println(myPowerUps.size());
+        System.out.println(myBlocks.size());
+        //levelOne.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
+
         myPaddle.checkLives(animation);
         myBouncer.move(elapsedTime, target);
         LivesLeft.setText("Lives: " + myPaddle.getLivesLeft());
@@ -153,19 +160,25 @@ public class BreakoutGame extends Application {
             myPaddle.getView().setX(myPaddle.getView().getX() + myPaddle.getSpeed());
         } else if (code == KeyCode.LEFT) {
             myPaddle.getView().setX(myPaddle.getView().getX() - myPaddle.getSpeed());
-            //} else if (code == KeyCode.UP) {
-            //myPaddle.getView().setY(myPaddle.getView().getY() - myPaddle.getSpeed());
-            // } else if (code == KeyCode.DOWN) {
-            //myPaddle.getView().setY(myPaddle.getView().getY() + myPaddle.getSpeed());
+            
         } else if (code == KeyCode.ESCAPE) {
             Platform.exit();
             System.exit(0);
         } else if (code == KeyCode.SPACE) {
             animation.play();
-        } else if(code == KeyCode.E) {
+        } else if (code == KeyCode.DIGIT2) {
+            currentLevel = 2;
+            setScene(currentLevel, levelTwo);
 
+        } else if (code == KeyCode.DIGIT3) {
+            currentLevel = 3;
+            setScene(currentLevel, levelThree);
+
+        } else if (code == KeyCode.DIGIT1) {
+            currentLevel = 1;
+            setScene(currentLevel,levelOne);
         }
-}
+    }
 
         private void arrangeBlocks (ArrayList < Block > blocks) {
             int rows = 2;
@@ -177,7 +190,6 @@ public class BreakoutGame extends Application {
                 blocks.get(i).getView().setFitWidth(blockWidth);
                 blocks.get(i).getView().setX(i * blockWidth);
                 blocks.get(i).getView().setY(20);
-
 
             }
             for (int i = blocksPerRow; i < NUM_BLOCKS; i++) {
