@@ -41,14 +41,9 @@ public class Block {
                 myView.setImage(null);
                 group.getChildren().remove(myView);
                 remove = true;
+            } else {
+                myView.setImage(weakBrick);
             }
-            //System.out.println(group == null);
-
-            //group.getChildren().remove(myView);
-
-            //group.getChildren().remove(myView);
-            myView.setImage(weakBrick);
-
         }
         return remove;
 

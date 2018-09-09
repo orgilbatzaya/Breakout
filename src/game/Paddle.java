@@ -34,10 +34,12 @@ public class Paddle {
         livesLeft += add;
     }
 
-    public void checkLives(Timeline animation){
+    public boolean checkLives(Timeline animation){
         if(livesLeft == 0){
             animation.stop();
+            return false;
         }
+        return true;
     }
     public int getSpeed(){
         return PADDLE_SPEED;

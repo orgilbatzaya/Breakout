@@ -3,6 +3,7 @@ package game;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -12,12 +13,14 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.Iterator;
 import javafx.application.Platform;
 import javafx.scene.text.Text;
+import javafx.scene.layout.StackPane;
 
 
 import javafx.scene.layout.Pane;
@@ -39,21 +42,27 @@ public class BreakoutGame extends Application {
     private final int NUM_BLOCKS = 16;
     private boolean skipLevel = false;
     private int currentLevel;
+    private int scoreValue;
 
 
     // some things we need to remember during our game
+    private Stage primaryStage;
     private Timeline animation;
+    private Scene splashScreen;
     private Scene levelOne;
     private Scene levelTwo;
     private Scene levelThree;
+    private Scene endScreen;
     private PowerUp startPowerUp;
     private Bouncer myBouncer;
     private Paddle myPaddle;
     private Text LivesLeft;
     private Text Level;
+    private Text Score;
+    private Text EndGame;
+    private String gameResult;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private ArrayList<PowerUp> myPowerUps = new ArrayList<>();
-    private Stage primaryStage;
 
 
     /**
@@ -63,20 +72,37 @@ public class BreakoutGame extends Application {
     public void start(Stage stage) {
         // attach scene to the stage and display it
         primaryStage = stage;
-        currentLevel = 1;
-        setScene(currentLevel, levelOne);
+        currentLevel = 0;
+        scoreValue = 0;
+        setScene(currentLevel);
 
         // attach "game loop" to timeline to play it
+
         var frame = new KeyFrame(Duration.millis(MILLISECOND_DELAY), e -> step(SECOND_DELAY, myPaddle));
+
         animation = new Timeline();
         animation.setCycleCount(Timeline.INDEFINITE);
         animation.getKeyFrames().add(frame);
         animation.play();
+
     }
 
-    private void setScene(int currentLvl, Scene scene){
+    private void setScene(int currentLvl){
+        Scene scene;
         myBlocks.clear();
         myPowerUps.clear();
+        if(currentLvl == 0){
+            scene = splashScreen;
+        }
+        else if(currentLvl == 1){
+            scene = levelOne;
+        }
+        else if(currentLvl == 2){
+            scene = levelTwo;
+        }
+        else if(currentLvl == 3){
+            scene = levelThree;
+        }
         scene = setupGame(SIZE, SIZE, BACKGROUND, currentLvl);
         primaryStage.setScene(scene);
         primaryStage.setTitle(TITLE);
@@ -85,72 +111,111 @@ public class BreakoutGame extends Application {
 
     // Create the game's "scene": what shapes will be in the game and their starting properties
     private Scene setupGame(int width, int height, Paint background, int currentLv) {
-        // create one top level collection to organize the things in the scene
         var root = new Group();
-        // create a place to see the shapes
         var scene = new Scene(root, width, height, background);
-        // make some shapes and set their properties
-        myBouncer = new Bouncer(SIZE, SIZE);
-        myPaddle = new Paddle(SIZE, SIZE);
 
-        root.getChildren().add(myPaddle.getView());
-        root.getChildren().add(myBouncer.getView());
-        for (int k = 0; k < NUM_BLOCKS; k++) {
-            var bl = new Block(2);
-            myBlocks.add(bl);
-            root.getChildren().add(bl.getView());
+        if(currentLv == 0){
+            StackPane splashRoot = new StackPane();
+            Text startInfo = new Text(100, 200,
+            "Hi! Welcome to my Breakout Game! \n \n" +
+                    "Hit the Blocks to gain points and beat levels! \n" +
+                    "As levels progress, blocks will increase in quantity\n"+
+                    "and strength. Don't let the ball fall under you! \n \n" +
+                    "There are 3 power ups that appear randomly: \n" +
+                    " - paddle widen \n " +
+                    " - add life \n"+
+                    " - enable a level skip \n \n" +
+                    "The cheat keys are: \n" +
+                    " - (0, 1, 2, 3) to navigate to the this screen and any level.\n" +
+                    " - \"I\" to gain a very large number of lives\n" +
+                    " - \"R\" to reset ball and paddle position in the middle \n" + "\n" +
+                    "PRESS S TO START");
+            startInfo.setTextAlignment(TextAlignment.CENTER);
+            splashRoot.getChildren().add(startInfo);
+            StackPane.setAlignment(startInfo, Pos.CENTER);
+            scene = new Scene(splashRoot, width, height, background);
+
+        } else {
+            myBouncer = new Bouncer(SIZE, SIZE);
+            myPaddle = new Paddle(SIZE, SIZE);
+
+            root.getChildren().add(myPaddle.getView());
+            root.getChildren().add(myBouncer.getView());
+            for (int k = 0; k < NUM_BLOCKS; k++) {
+                var bl = new Block(2);
+                myBlocks.add(bl);
+                root.getChildren().add(bl.getView());
+            }
+            arrangeBlocks(myBlocks);
+
+
+            startPowerUp = new PowerUp(null);
+            myPowerUps = startPowerUp.makePowerUps(myBlocks);
+            for (int k = 0; k < myPowerUps.size(); k++) {
+                root.getChildren().add(myPowerUps.get(k).getView());
+            }
+
+            LivesLeft = new Text(10, 10, "LIVES LEFT: " + myPaddle.getLivesLeft());
+            Level = new Text(110, 10, "LEVEL: " + currentLv);
+            Score = new Text(210, 10, "SCORE: " + scoreValue);
+            EndGame = new Text(SIZE / 2, SIZE / 2, "");
+
+
+            root.getChildren().add(LivesLeft);
+            root.getChildren().add(Level);
+            root.getChildren().add(Score);
+            root.getChildren().add(EndGame);
         }
-        arrangeBlocks(myBlocks);
 
-
-        startPowerUp = new PowerUp(null);
-        myPowerUps = startPowerUp.makePowerUps(myBlocks);
-        for (int k = 0; k < myPowerUps.size(); k++) {
-            root.getChildren().add(myPowerUps.get(k).getView());
-        }
-
-
-
-
-        LivesLeft = new Text(10, 10, "Lives left: " + myPaddle.getLivesLeft());
-        Level = new Text(100, 10, "LEVEL: " + currentLv);
-
-        root.getChildren().add(LivesLeft);
-        root.getChildren().add(Level);
-
-
-        // respond to input
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
         return scene;
     }
 
-    // Change properties of shapes to animate them
-    // Note, there are more sophisticated ways to animate shapes, but these simple ways work fine to start.
+    private void checkGameProgress(){
+        if(myBlocks.size() == 0 && currentLevel!= 0){
+            currentLevel ++;
+            setScene(currentLevel);
+        }
+        if(currentLevel == 4){
+           gameResult = "won";
+        }
+    }
     private void step(double elapsedTime, Paddle target) {
         // update attributes
         System.out.println(myBlocks.size());
-        //levelOne.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
-
-        myPaddle.checkLives(animation);
-        myBouncer.move(elapsedTime, target);
-        LivesLeft.setText("Lives: " + myPaddle.getLivesLeft());
-
-        for (int i = 0; i < myBlocks.size(); i++) {
-
-            if (myBlocks.get(i).onHit(myBouncer.getView())) {
-                myBlocks.remove(i);
+        if(currentLevel != 0) {
+            checkGameProgress();
+            if (gameResult == "won") {
+                animation.pause();
+                EndGame.setText("You " + gameResult + "! Your score was " + scoreValue);
             }
-            myBouncer.checkDirection(myBlocks.get(i).getView(), myPaddle);
+            if (myPaddle.checkLives(animation) == false) {
+                gameResult = "lost";
+                EndGame.setText("You " + gameResult + "! Your score was " + scoreValue);
+            }
 
+
+            myBouncer.move(elapsedTime, target);
+            LivesLeft.setText("Lives: " + myPaddle.getLivesLeft());
+            Score.setText("SCORE: " + scoreValue);
+
+            for (int i = 0; i < myBlocks.size(); i++) {
+
+                if (myBlocks.get(i).onHit(myBouncer.getView())) {
+                    myBlocks.remove(i);
+                    scoreValue += 10;
+                }
+                myBouncer.checkDirection(myBlocks.get(i).getView(), myPaddle);
+
+            }
+            myBouncer.checkDirection(myPaddle.getView(), myPaddle);
+            for (int i = 0; i < myPowerUps.size(); i++) {
+                myPowerUps.get(i).onHit(myBouncer.getView());
+                myPowerUps.get(i).pickedUp(myPaddle);
+                myPowerUps.get(i).move(elapsedTime);
+
+            }
         }
-        myBouncer.checkDirection(myPaddle.getView(), myPaddle);
-        for(int i = 0; i < myPowerUps.size(); i++){
-            myPowerUps.get(i).onHit(myBouncer.getView());
-            myPowerUps.get(i).pickedUp(myPaddle);
-            myPowerUps.get(i).move(elapsedTime);
-
-        }
-
     }
 
 
@@ -160,7 +225,6 @@ public class BreakoutGame extends Application {
             myPaddle.getView().setX(myPaddle.getView().getX() + myPaddle.getSpeed());
         } else if (code == KeyCode.LEFT) {
             myPaddle.getView().setX(myPaddle.getView().getX() - myPaddle.getSpeed());
-            
         } else if (code == KeyCode.ESCAPE) {
             Platform.exit();
             System.exit(0);
@@ -168,15 +232,21 @@ public class BreakoutGame extends Application {
             animation.play();
         } else if (code == KeyCode.DIGIT2) {
             currentLevel = 2;
-            setScene(currentLevel, levelTwo);
-
+            setScene(currentLevel);
         } else if (code == KeyCode.DIGIT3) {
             currentLevel = 3;
-            setScene(currentLevel, levelThree);
-
-        } else if (code == KeyCode.DIGIT1) {
+            setScene(currentLevel);
+        } else if (code == KeyCode.DIGIT1 || code == KeyCode.S) {
             currentLevel = 1;
-            setScene(currentLevel,levelOne);
+            setScene(currentLevel);
+        } else if (code == KeyCode.DIGIT0) {
+            currentLevel = 0;
+            setScene(currentLevel);
+        } else if (code == KeyCode.I) {
+            myPaddle.addLives(1000);
+        } else if (code == KeyCode.R) {
+            currentLevel = 0;
+            setScene(currentLevel);
         }
     }
 
