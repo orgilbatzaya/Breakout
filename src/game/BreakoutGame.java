@@ -15,13 +15,13 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import javafx.util.Duration;
-import java.util.ArrayList;
 import java.util.Iterator;
 import javafx.application.Platform;
 import javafx.scene.text.Text;
 import javafx.scene.layout.StackPane;
-
+import javafx.util.Duration;
+import java.util.ArrayList;
+import java.util.Stack;
 
 import javafx.scene.layout.Pane;
 
@@ -39,8 +39,13 @@ public class BreakoutGame extends Application {
     private final double SECOND_DELAY = 1.0 / FRAMES_PER_SECOND;
     private final Paint BACKGROUND = Color.AZURE;
     private final Paint HIGHLIGHT = Color.OLIVEDRAB;
-    private final int NUM_BLOCKS = 16;
+    private final int NUM_1BLOCKS = 20;
+    private final int NUM_2BLOCKS = 30;
+    private final int NUM_3BLOCKS = 40;
+
     private boolean skipLevel = false;
+    private boolean startMoving = false;
+    private boolean startShot = false;
     private int currentLevel;
     private int scoreValue;
 
@@ -54,6 +59,7 @@ public class BreakoutGame extends Application {
     private Scene levelThree;
     private Scene endScreen;
     private PowerUp startPowerUp;
+    private Projectile startProjectile;
     private Bouncer myBouncer;
     private Paddle myPaddle;
     private Text LivesLeft;
@@ -63,6 +69,8 @@ public class BreakoutGame extends Application {
     private String gameResult;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private ArrayList<PowerUp> myPowerUps = new ArrayList<>();
+    private Stack<Projectile> myProjectiles = new Stack<>();
+    private ArrayList<Projectile> firedProjectiles = new ArrayList<>();
 
 
     /**
@@ -136,24 +144,27 @@ public class BreakoutGame extends Application {
             scene = new Scene(splashRoot, width, height, background);
 
         } else {
+            int numBlocks = 0;
             myBouncer = new Bouncer(SIZE, SIZE);
             myPaddle = new Paddle(SIZE, SIZE);
 
             root.getChildren().add(myPaddle.getView());
             root.getChildren().add(myBouncer.getView());
-            for (int k = 0; k < NUM_BLOCKS; k++) {
-                var bl = new Block(2);
-                myBlocks.add(bl);
-                root.getChildren().add(bl.getView());
-            }
-            arrangeBlocks(myBlocks);
 
+            arrangeBlocks(root, currentLv);
 
             startPowerUp = new PowerUp(null);
             myPowerUps = startPowerUp.makePowerUps(myBlocks);
             for (int k = 0; k < myPowerUps.size(); k++) {
                 root.getChildren().add(myPowerUps.get(k).getView());
             }
+
+            startProjectile = new Projectile(null);
+            myProjectiles = startProjectile.makeProjectiles(myBlocks);
+            for (int k = 0; k < myProjectiles.size(); k++) {
+                root.getChildren().add(myProjectiles.get(k).getView());
+            }
+
 
             LivesLeft = new Text(10, 10, "LIVES LEFT: " + myPaddle.getLivesLeft());
             Level = new Text(110, 10, "LEVEL: " + currentLv);
@@ -182,7 +193,9 @@ public class BreakoutGame extends Application {
     }
     private void step(double elapsedTime, Paddle target) {
         // update attributes
-        System.out.println(myBlocks.size());
+        //System.out.println(myPaddle.getProjectiles().size());
+        //System.out.println(myPaddle.getProjectiles().size());
+
         if(currentLevel != 0) {
             checkGameProgress();
             if (gameResult == "won") {
@@ -193,11 +206,10 @@ public class BreakoutGame extends Application {
                 gameResult = "lost";
                 EndGame.setText("You " + gameResult + "! Your score was " + scoreValue);
             }
-
-
-            myBouncer.move(elapsedTime, target);
             LivesLeft.setText("Lives: " + myPaddle.getLivesLeft());
             Score.setText("SCORE: " + scoreValue);
+
+            myBouncer.move(elapsedTime, target, startMoving);
 
             for (int i = 0; i < myBlocks.size(); i++) {
 
@@ -215,10 +227,18 @@ public class BreakoutGame extends Application {
                 myPowerUps.get(i).move(elapsedTime);
 
             }
+            for (int i = 0; i < myProjectiles.size(); i++) {
+                myProjectiles.get(i).onHit(myBouncer.getView());
+                myProjectiles.get(i).pickedUp(myPaddle);
+                myProjectiles.get(i).move(elapsedTime);
+                if(myProjectiles.get(i).isLoaded()){
+                    myProjectiles.get(i).launch(elapsedTime);
+                }
+            }
+
         }
     }
-
-
+    
     // What to do each time a key is pressed
     private void handleKeyInput(KeyCode code) {
         if (code == KeyCode.RIGHT) {
@@ -229,7 +249,7 @@ public class BreakoutGame extends Application {
             Platform.exit();
             System.exit(0);
         } else if (code == KeyCode.SPACE) {
-            animation.play();
+            startMoving = true;
         } else if (code == KeyCode.DIGIT2) {
             currentLevel = 2;
             setScene(currentLevel);
@@ -245,34 +265,43 @@ public class BreakoutGame extends Application {
         } else if (code == KeyCode.I) {
             myPaddle.addLives(1000);
         } else if (code == KeyCode.R) {
-            currentLevel = 0;
-            setScene(currentLevel);
+            myBouncer.setPos();
+            startMoving = false;
+        }
+        else if (code == KeyCode.F && myPaddle.getProjectiles().size() > 0){
+            myPaddle.shoot();
         }
     }
 
-        private void arrangeBlocks (ArrayList < Block > blocks) {
-            int rows = 2;
-            int blocksPerRow = NUM_BLOCKS / rows;
-
-
-            double blockWidth = SIZE / blocksPerRow;
-            for (int i = 0; i < blocksPerRow; i++) {
-                blocks.get(i).getView().setFitWidth(blockWidth);
-                blocks.get(i).getView().setX(i * blockWidth);
-                blocks.get(i).getView().setY(20);
-
+        private void arrangeBlocks (Group root, int currentLevel) {
+            int numBlocks = 0;
+            int rows = 0;
+            int blocksPerRow = 0;
+            if (currentLevel == 1) {
+                rows = 2;
+                blocksPerRow = NUM_1BLOCKS / rows;
+                numBlocks = NUM_1BLOCKS;
+            } else if (currentLevel == 2) {
+                rows = 3;
+                blocksPerRow = NUM_2BLOCKS / rows;
+                numBlocks = NUM_2BLOCKS;
+            } else if (currentLevel == 3) {
+                rows = 4;
+                blocksPerRow = NUM_3BLOCKS / rows;
+                numBlocks = NUM_3BLOCKS;
             }
-            for (int i = blocksPerRow; i < NUM_BLOCKS; i++) {
-                blocks.get(i).getView().setFitWidth(blockWidth);
-                blocks.get(i).getView().setX((i - 8) * blockWidth);
-                blocks.get(i).getView().setY(50);
-
-
+            for (int k = 0; k < numBlocks; k++) {
+                var bl = new Block(2);
+                myBlocks.add(bl);
+                root.getChildren().add(bl.getView());
+            }
+            double blockWidth = SIZE / blocksPerRow;
+            for (int i = 0; i < myBlocks.size(); i++) {
+                    myBlocks.get(i).getView().setFitWidth(blockWidth);
+                    myBlocks.get(i).getView().setX((i%blocksPerRow) * blockWidth);
+                    myBlocks.get(i).getView().setY( 25 * ((i / blocksPerRow) + 1));
             }
         }
-
-
-
 
 
     /**

@@ -45,12 +45,14 @@ public class Bouncer {
         ydirection = 1;
     }
 
-    public void move (double elapsed, Paddle target) {
-        myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
-        myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
-        checkScreenBounds(target);
-        myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
-        myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+    public void move (double elapsed, Paddle target, boolean start) {
+        if(start) {
+            myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
+            myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+            checkScreenBounds(target);
+            myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
+            myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+        }
     }
     private void checkScreenBounds(Paddle targetPaddle){
         if (myView.getX() < 0 || myView.getX() > screenWidth - myView.getBoundsInLocal().getWidth()){
@@ -67,7 +69,7 @@ public class Bouncer {
     }
     public void setPos(){
         myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
-        myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
+        myView.setY(120 + screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
     }
 
 
