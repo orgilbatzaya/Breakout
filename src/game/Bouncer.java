@@ -1,12 +1,7 @@
 package game;
 
-import java.util.Random;
-import javafx.geometry.Point2D;
-import javafx.scene.Node;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.animation.Timeline;
-
 
 
 public class Bouncer {
@@ -15,7 +10,6 @@ public class Bouncer {
     private int BOUNCER_SPEED = 60;
     private int xdirection = 1;
     private int ydirection = 1;
-    private int livesLeft = 3;
     private int screenWidth;
     private int screenHeight;
 
@@ -24,14 +18,10 @@ public class Bouncer {
     public Bouncer (int screenWidth, int screenHeight) {
         Image bouncerImage = new Image(this.getClass().getClassLoader().getResourceAsStream(BOUNCER_IMAGE));
         myView = new ImageView(bouncerImage);
-
-        //myView.setX(screenWidth / 2 - myView.getBoundsInLocal().getWidth() / 2);
-        //myView.setY(screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
         this.screenWidth = screenWidth;
         this.screenHeight = screenHeight;
         setPos();
     }
-
 
 
     public void checkDirection (ImageView obj, Paddle target) {
@@ -41,9 +31,6 @@ public class Bouncer {
             ydirection *= -1;
         }
     }
-    public void paddleBounce(){
-        ydirection = 1;
-    }
 
     public void move (double elapsed, Paddle target, boolean start) {
         if(start) {
@@ -52,6 +39,7 @@ public class Bouncer {
             checkScreenBounds(target);
             myView.setX(myView.getX() + xdirection * BOUNCER_SPEED * elapsed);
             myView.setY(myView.getY() + ydirection * BOUNCER_SPEED * elapsed);
+
         }
     }
     private void checkScreenBounds(Paddle targetPaddle){
@@ -72,15 +60,13 @@ public class Bouncer {
         myView.setY(120 + screenHeight / 2 - myView.getBoundsInLocal().getHeight() / 2);
     }
 
-
-
-
-
+    public void increaseSpeed(double mult){
+        BOUNCER_SPEED *= mult;
+    }
 
 
     public ImageView getView () {
         return myView;
     }
-
 
 }

@@ -6,16 +6,11 @@ import javafx.application.Application;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.scene.shape.Rectangle;
-import javafx.scene.shape.Shape;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Stage;
-import java.util.Iterator;
 import javafx.application.Platform;
 import javafx.scene.text.Text;
 import javafx.scene.layout.StackPane;
@@ -23,13 +18,12 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.Stack;
 
-import javafx.scene.layout.Pane;
 
 
 /**
  * A breakout variant
  *
- * @author Orgil Batzaya
+ * @author Orgil Batzaya, ob29
  */
 public class BreakoutGame extends Application {
     private final String TITLE = "Breakout";
@@ -41,10 +35,10 @@ public class BreakoutGame extends Application {
     private final Paint HIGHLIGHT = Color.OLIVEDRAB;
     private final int NUM_1BLOCKS = 20;
     private final int NUM_2BLOCKS = 30;
-    private final int NUM_3BLOCKS = 40;
+    private final int NUM_3BLOCKS = 30;
 
-    private boolean skipLevel = false;
-    private boolean startMoving = false;
+    private boolean skipLevel;
+    private boolean startMoving;
     private boolean startShot = false;
     private int currentLevel;
     private int scoreValue;
@@ -62,10 +56,12 @@ public class BreakoutGame extends Application {
     private Projectile startProjectile;
     private Bouncer myBouncer;
     private Paddle myPaddle;
+    private Text spaceBar;
     private Text LivesLeft;
     private Text Level;
     private Text Score;
     private Text EndGame;
+    private Text skipText;
     private String gameResult;
     private ArrayList<Block> myBlocks = new ArrayList<Block>();
     private ArrayList<PowerUp> myPowerUps = new ArrayList<>();
@@ -144,8 +140,16 @@ public class BreakoutGame extends Application {
             scene = new Scene(splashRoot, width, height, background);
 
         } else {
+            startMoving = false;
+            skipLevel = false;
             int numBlocks = 0;
             myBouncer = new Bouncer(SIZE, SIZE);
+            if(currentLv == 2){
+                myBouncer.increaseSpeed(1.2);
+            }
+            else if(currentLv == 3){
+                myBouncer.increaseSpeed(1.5);
+            }
             myPaddle = new Paddle(SIZE, SIZE);
 
             root.getChildren().add(myPaddle.getView());
@@ -165,17 +169,20 @@ public class BreakoutGame extends Application {
                 root.getChildren().add(myProjectiles.get(k).getView());
             }
 
-
+            spaceBar = new Text(200, 300, "Press Space Bar to begin!");
             LivesLeft = new Text(10, 10, "LIVES LEFT: " + myPaddle.getLivesLeft());
             Level = new Text(110, 10, "LEVEL: " + currentLv);
             Score = new Text(210, 10, "SCORE: " + scoreValue);
             EndGame = new Text(SIZE / 2, SIZE / 2, "");
+            skipText = new Text(200, 200, "");
 
-
+            root.getChildren().add(spaceBar);
             root.getChildren().add(LivesLeft);
             root.getChildren().add(Level);
             root.getChildren().add(Score);
             root.getChildren().add(EndGame);
+            root.getChildren().add(skipText);
+
         }
 
         scene.setOnKeyPressed(e -> handleKeyInput(e.getCode()));
@@ -208,19 +215,31 @@ public class BreakoutGame extends Application {
             }
             LivesLeft.setText("Lives: " + myPaddle.getLivesLeft());
             Score.setText("SCORE: " + scoreValue);
+            if(myPaddle.getSkipLevel()){
+                skipLevel = true;
+                skipText.setText("Press L to skip to the next level!");
+            }
 
             myBouncer.move(elapsedTime, target, startMoving);
-
             for (int i = 0; i < myBlocks.size(); i++) {
-
                 if (myBlocks.get(i).onHit(myBouncer.getView())) {
                     myBlocks.remove(i);
                     scoreValue += 10;
                 }
                 myBouncer.checkDirection(myBlocks.get(i).getView(), myPaddle);
-
             }
             myBouncer.checkDirection(myPaddle.getView(), myPaddle);
+
+            /*for(int i = 0; i < myProjectiles.size(); i++) {
+                for (int j = 0; j < myBlocks.size(); j++) {
+                    if (myBlocks.get(j).onHit(myProjectiles.get(i).getView())) {
+                        myBlocks.remove(i);
+                        scoreValue += 10;
+                    }
+                }
+            }*/
+
+
             for (int i = 0; i < myPowerUps.size(); i++) {
                 myPowerUps.get(i).onHit(myBouncer.getView());
                 myPowerUps.get(i).pickedUp(myPaddle);
@@ -238,7 +257,7 @@ public class BreakoutGame extends Application {
 
         }
     }
-    
+
     // What to do each time a key is pressed
     private void handleKeyInput(KeyCode code) {
         if (code == KeyCode.RIGHT) {
@@ -248,17 +267,22 @@ public class BreakoutGame extends Application {
         } else if (code == KeyCode.ESCAPE) {
             Platform.exit();
             System.exit(0);
+        } else if(code == KeyCode.L && skipLevel){
+            setScene(currentLevel+1);
         } else if (code == KeyCode.SPACE) {
             startMoving = true;
         } else if (code == KeyCode.DIGIT2) {
             currentLevel = 2;
             setScene(currentLevel);
+            animation.play();
         } else if (code == KeyCode.DIGIT3) {
             currentLevel = 3;
             setScene(currentLevel);
+            animation.play();
         } else if (code == KeyCode.DIGIT1 || code == KeyCode.S) {
             currentLevel = 1;
             setScene(currentLevel);
+            animation.play();
         } else if (code == KeyCode.DIGIT0) {
             currentLevel = 0;
             setScene(currentLevel);
@@ -274,24 +298,27 @@ public class BreakoutGame extends Application {
     }
 
         private void arrangeBlocks (Group root, int currentLevel) {
-            int numBlocks = 0;
             int rows = 0;
             int blocksPerRow = 0;
             if (currentLevel == 1) {
                 rows = 2;
                 blocksPerRow = NUM_1BLOCKS / rows;
-                numBlocks = NUM_1BLOCKS;
             } else if (currentLevel == 2) {
                 rows = 3;
                 blocksPerRow = NUM_2BLOCKS / rows;
-                numBlocks = NUM_2BLOCKS;
             } else if (currentLevel == 3) {
-                rows = 4;
+                rows = 3;
                 blocksPerRow = NUM_3BLOCKS / rows;
-                numBlocks = NUM_3BLOCKS;
             }
+            int numBlocks = blocksPerRow * rows;
             for (int k = 0; k < numBlocks; k++) {
-                var bl = new Block(2);
+                var bl = new Block(1);
+                if(currentLevel == 2){
+                    bl = new Block((k%2)+1);
+                }
+                else if(currentLevel == 3){
+                    bl = new Block(2);
+                }
                 myBlocks.add(bl);
                 root.getChildren().add(bl.getView());
             }

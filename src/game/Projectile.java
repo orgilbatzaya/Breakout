@@ -3,7 +3,6 @@ package game;
 import java.util.ArrayList;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import java.lang.Math;
 import java.util.Collections;
 import java.util.Stack;
 
@@ -35,6 +34,8 @@ public class Projectile {
             blocks.get(i).getView().setVisible(false);
             p.myView.setX(blocks.get(i).getView().getX());
             p.myView.setY(blocks.get(i).getView().getY());
+            p.myView.setFitWidth(blocks.get(i).getView().getFitWidth());
+
             myProjectiles.add(p);
         }
         return myProjectiles;
@@ -42,14 +43,12 @@ public class Projectile {
 
     public void pickedUp(Paddle targetPaddle) {
         if(targetPaddle.getView().getBoundsInParent().intersects(myView.getBoundsInParent())){
-            //myView.setImage(null);
             myView.setX(targetPaddle.getView().getX());
             myView.setY(targetPaddle.getView().getY());
             this.loaded = true;
-
-            //targetPaddle.addProjectile(this);
         }
     }
+
     public boolean isLoaded(){
         return loaded;
     }

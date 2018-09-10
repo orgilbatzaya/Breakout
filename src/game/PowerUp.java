@@ -32,6 +32,7 @@ public class PowerUp {
             blocks.get(i).getView().setVisible(false);
             p.myView.setX(blocks.get(i).getView().getX());
             p.myView.setY(blocks.get(i).getView().getY());
+            p.myView.setFitWidth(blocks.get(i).getView().getFitWidth());
             //p.myView.setVisible(true);
             myPowerUps.add(p);
         }
@@ -46,8 +47,12 @@ public class PowerUp {
                 System.out.println("lengthen" + targetPaddle.getPaddleWidth());
                 lengthenPaddle(targetPaddle);
             }
-            else if(choice == 2) addLife(targetPaddle);
-            else enableSkipLevel();
+            else if(choice == 2) {
+                addLife(targetPaddle);
+            }
+            else{
+                targetPaddle.setSkipLevel(true);
+            }
         }
     }
 
@@ -63,10 +68,7 @@ public class PowerUp {
     }
     public void lengthenPaddle(Paddle targetPaddle){
         //targetPaddle.setPaddleWidth(targetPaddle.getPaddleWidth() * 2);
-        targetPaddle.getView().setFitWidth(200);
-    }
-    public boolean enableSkipLevel(){
-        return true;
+        targetPaddle.getView().setFitWidth(150);
     }
     public void move (double elapsed) {
         myView.setY(myView.getY() + FALL_SPEED * elapsed);

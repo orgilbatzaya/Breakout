@@ -16,6 +16,7 @@ public class Paddle {
     private Image paddle;
     private ImageView myView;
     private int livesLeft;
+    private boolean skipLevel;
     private Stack<Projectile> myProjectiles;
     private ArrayList<Projectile> firedProjectiles;
 
@@ -47,7 +48,7 @@ public class Paddle {
 
     public boolean checkLives(Timeline animation){
         if(livesLeft == 0){
-            animation.stop();
+            animation.pause();
             return false;
         }
         return true;
@@ -61,6 +62,12 @@ public class Paddle {
     }
     public double getPaddleWidth(){
         return paddleWidth;
+    }
+    public void setSkipLevel(boolean inp){
+        skipLevel = inp;
+    }
+    public boolean getSkipLevel(){
+        return skipLevel;
     }
     public void addProjectile(Projectile proj){
         myProjectiles.push(proj);
