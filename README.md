@@ -11,7 +11,7 @@ Start Date: 09/03/2018
 
 Finish Date: 09/10/2018
 
-Hours Spent:
+Hours Spent: 20
 
 ### Resources Used
 images from lab-bounce; credit to Professor Duvall
